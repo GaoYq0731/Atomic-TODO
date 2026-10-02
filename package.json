@@ -1,0 +1,74 @@
+{
+  "name": "atomic-todo",
+  "version": "0.1.0",
+  "description": "一个轻巧、有趣、常驻桌面的 Windows 待办清单。",
+  "main": "electron/main.cjs",
+  "author": {
+    "name": "GaoYq0731",
+    "email": "gaoyq2001@163.com"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GaoYq0731/atomic-todo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GaoYq0731/atomic-todo/issues"
+  },
+  "homepage": "https://github.com/GaoYq0731/atomic-todo#readme",
+  "keywords": [
+    "todo",
+    "electron",
+    "windows",
+    "desktop-widget",
+    "reminder"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check prototype/app.js",
+    "pack": "electron-builder --dir --win",
+    "dist": "electron-builder --win nsis",
+    "portable": "electron-builder --win portable --config.artifactName=AtomicTodo-Portable-${version}-${arch}.${ext}"
+  },
+  "devDependencies": {
+    "electron": "44.4.1",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "io.github.gaoyq0731.atomictodo",
+    "productName": "原子代办",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "prototype/**/*",
+      "build/icon.*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "artifactName": "AtomicTodo-Setup-${version}-${arch}.${ext}",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "include": "build/installer.nsh",
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "原子代办"
+    }
+  }
+}

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>原子代办</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="widget" aria-label="原子代办">
+      <header class="widget__header">
+        <div>
+          <p class="eyebrow" id="todayLabel"></p>
+          <h1>原子代办</h1>
+        </div>
+        <div class="header-actions">
+          <button class="icon-button" id="ultraCompactButton" title="超紧凑模式" aria-label="切换超紧凑模式">◉</button>
+          <button class="icon-button" id="compactButton" title="紧凑模式" aria-label="切换紧凑模式">↙</button>
+          <button class="icon-button" id="lockButton" title="锁定位置" aria-label="锁定位置">⌁</button>
+          <button class="icon-button desktop-only" id="closeButton" title="退出" aria-label="退出应用">×</button>
+        </div>
+      </header>
+
+      <nav class="plan-switch" id="planTabs" aria-label="计划周期"></nav>
+
+      <nav class="category-bar" aria-label="任务分类">
+        <div class="category-tabs" id="categoryTabs"></div>
+        <button class="category-manage" id="categoryManageButton" aria-label="管理分类" title="管理分类">＋</button>
+      </nav>
+
+      <form class="quick-add" id="taskForm">
+        <div class="quick-add__entry">
+          <span class="quick-add__plus">＋</span>
+          <input id="taskInput" autocomplete="off" placeholder="输入任务，例如：交材料" />
+          <button class="quick-add__submit" type="submit">添加</button>
+        </div>
+        <div class="quick-add__options">
+          <label>计划 <select id="taskPlan" aria-label="计划周期"></select></label>
+          <label>类别 <select id="taskCategory" aria-label="任务分类"></select></label>
+          <button class="reminder-button" id="reminderButton" type="button">提醒：关闭</button>
+        </div>
+      </form>
+
+      <section class="section" aria-labelledby="focusTitle">
+        <div class="section__title-row">
+          <h2 id="focusTitle">正在进行</h2>
+          <span class="count" id="activeCount"></span>
+        </div>
+        <div class="tasks" id="activeTasks"></div>
+      </section>
+
+      <section class="section section--done" id="doneSection" aria-labelledby="doneTitle">
+        <button class="section__toggle" id="doneToggle">
+          <span id="doneTitle">已完成</span>
+          <span id="doneCount"></span>
+        </button>
+        <div class="tasks" id="doneTasks"></div>
+      </section>
+
+      <footer class="widget__footer">
+        <div class="progress-copy">
+          <span id="progressText">今天刚刚开始</span>
+          <span class="status-dot" aria-hidden="true"></span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <span id="progressBar"></span>
+        </div>
+      </footer>
+      <button class="ultra-launcher" id="ultraRestoreButton" aria-label="展开原子代办">✓</button>
+    </main>
+
+    <dialog class="category-dialog" id="categoryDialog">
+      <div class="dialog__header">
+        <div>
+          <p class="eyebrow">整理你的世界</p>
+          <h2>管理分类</h2>
+        </div>
+        <button class="dialog__close" id="categoryDialogClose" aria-label="关闭">×</button>
+      </div>
+      <div class="category-list" id="categoryList"></div>
+      <form class="category-add" id="categoryForm">
+        <input id="categoryInput" maxlength="10" autocomplete="off" placeholder="新分类名称" />
+        <button type="submit">新增</button>
+      </form>
+      <p class="dialog__hint">“全部”和“其他”为固定分类。</p>
+    </dialog>
+
+    <dialog class="category-dialog reminder-dialog" id="reminderDialog">
+      <div class="dialog__header">
+        <div>
+          <p class="eyebrow">Windows 应用提醒</p>
+          <h2>设置提醒</h2>
+        </div>
+        <button class="dialog__close" id="reminderDialogClose" aria-label="关闭">×</button>
+      </div>
+      <div class="reminder-fields">
+        <label>日期 <input id="reminderDate" type="date" /></label>
+        <label>时间 <input id="reminderTime" type="time" /></label>
+        <label>提前提醒
+          <select id="reminderLead">
+            <option value="0">准时</option>
+            <option value="5">提前 5 分钟</option>
+            <option value="10">提前 10 分钟</option>
+            <option value="30">提前 30 分钟</option>
+          </select>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-button dialog-button--ghost" id="reminderClear" type="button">不提醒</button>
+        <button class="dialog-button dialog-button--primary" id="reminderSave" type="button">保存提醒</button>
+      </div>
+      <p class="dialog__hint">应用保持运行时，到点会显示 Windows 通知。</p>
+    </dialog>
+
+    <template id="taskTemplate">
+      <article class="task">
+        <button class="check" aria-label="完成任务"><span></span></button>
+        <div class="task__content">
+          <p class="task__name"></p>
+          <span class="task__time"></span>
+        </div>
+        <button class="delete" aria-label="删除任务">×</button>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
