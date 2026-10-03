@@ -200,7 +200,7 @@ h1 {
 
 .plan-switch {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   margin-top: 20px;
   padding: 4px;
@@ -390,6 +390,29 @@ h2,
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.065);
   transform: translateY(-1px);
+}
+
+.task.is-daily:not(.is-done) {
+  border-color: rgba(142, 124, 246, 0.24);
+  background:
+    linear-gradient(110deg, rgba(142, 124, 246, 0.15), rgba(166, 243, 207, 0.055)),
+    rgba(255, 255, 255, 0.035);
+}
+
+.task.is-daily:not(.is-done):hover {
+  border-color: rgba(166, 243, 207, 0.3);
+  background:
+    linear-gradient(110deg, rgba(142, 124, 246, 0.21), rgba(166, 243, 207, 0.08)),
+    rgba(255, 255, 255, 0.045);
+}
+
+.task.is-daily:not(.is-done) .task__name {
+  color: #ded8ff;
+  font-weight: 650;
+}
+
+.task.is-daily:not(.is-done) .task__time {
+  color: #b9abff;
 }
 
 .check {

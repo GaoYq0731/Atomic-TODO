@@ -1,6 +1,6 @@
 {
   "name": "atomic-todo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "一个轻巧、有趣、常驻桌面的 Windows 待办清单。",
   "main": "electron/main.cjs",
   "author": {
@@ -29,7 +29,7 @@
   },
   "scripts": {
     "start": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check prototype/app.js",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check prototype/recurrence.js && node --check prototype/app.js && node --test tests/*.test.cjs",
     "pack": "electron-builder --dir --win",
     "dist": "electron-builder --win nsis",
     "portable": "electron-builder --win portable --config.artifactName=AtomicTodo-Portable-${version}-${arch}.${ext}"

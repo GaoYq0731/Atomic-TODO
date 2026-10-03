@@ -1,6 +1,8 @@
 const STORAGE_KEY = "atomic-todo-v1";
+const { shouldGenerateDailyTask } = globalThis.AtomicTodoRecurrence;
 
 const plans = [
+  { id: "daily", name: "日常计划" },
   { id: "day", name: "日计划" },
   { id: "week", name: "周计划" },
   { id: "month", name: "月计划" },
@@ -28,16 +30,27 @@ function loadState() {
         planId: plans.some((plan) => plan.id === task.planId) ? task.planId : "day",
         reminderAt: task.reminderAt ?? null,
         reminderLead: Number(task.reminderLead ?? 0),
+        recurrenceId: task.recurrenceId ?? null,
+        occurrenceDate: task.occurrenceDate ?? null,
       }));
+      saved.dailyTemplates = Array.isArray(saved.dailyTemplates)
+        ? saved.dailyTemplates.map((template) => ({
+          ...template,
+          reminderTime: template.reminderTime ?? null,
+          reminderLead: Number(template.reminderLead ?? 0),
+          lastGeneratedDate: template.lastGeneratedDate ?? null,
+        }))
+        : [];
       return saved;
     }
   } catch {}
-  return { categories: defaultCategories, tasks: defaultTasks };
+  return { categories: defaultCategories, tasks: defaultTasks, dailyTemplates: [] };
 }
 
 const savedState = loadState();
 let categories = savedState.categories;
 let tasks = savedState.tasks;
+let dailyTemplates = savedState.dailyTemplates;
 let activeCategory = "all";
 let activePlan = "all";
 let pendingReminder = null;
@@ -78,7 +91,33 @@ function localDateValue(date = new Date()) {
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ categories, tasks }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ categories, tasks, dailyTemplates }));
+}
+
+function createDailyOccurrence(template, date) {
+  return {
+    id: crypto.randomUUID(),
+    name: template.name,
+    time: template.time,
+    categoryId: template.categoryId,
+    planId: "daily",
+    reminderAt: template.reminderTime ? `${date}T${template.reminderTime}` : null,
+    reminderLead: template.reminderLead,
+    recurrenceId: template.id,
+    occurrenceDate: date,
+    done: false,
+  };
+}
+
+function ensureDailyTasks(date = localDateValue()) {
+  let added = false;
+  dailyTemplates.forEach((template) => {
+    if (!shouldGenerateDailyTask(template, tasks, date)) return;
+    tasks.unshift(createDailyOccurrence(template, date));
+    template.lastGeneratedDate = date;
+    added = true;
+  });
+  return added;
 }
 
 function parseTask(value) {
@@ -120,14 +159,28 @@ function renderTask(task) {
   else if (task.time && task.time !== "无提醒") metadata.unshift(task.time);
 
   node.classList.toggle("is-done", task.done);
+  node.classList.toggle("is-daily", task.planId === "daily");
   node.querySelector(".task__name").textContent = task.name;
   node.querySelector(".task__time").textContent = metadata.join(" · ");
   node.querySelector(".check").addEventListener("click", () => {
+    if (task.done && task.recurrenceId) {
+      const hasAnotherPending = tasks.some((item) => item.id !== task.id
+        && item.recurrenceId === task.recurrenceId
+        && !item.done);
+      if (hasAnotherPending) return;
+    }
     task.done = !task.done;
+    ensureDailyTasks();
     render();
   });
-  node.querySelector(".delete").addEventListener("click", () => {
+  const deleteButton = node.querySelector(".delete");
+  if (task.planId === "daily") {
+    deleteButton.title = "删除本次；日后仍会每日重复";
+    deleteButton.setAttribute("aria-label", "删除本次日常任务");
+  }
+  deleteButton.addEventListener("click", () => {
     tasks = tasks.filter((item) => item.id !== task.id);
+    ensureDailyTasks();
     render();
   });
   return node;
@@ -231,6 +284,9 @@ function renderCategoryManager() {
         tasks.forEach((task) => {
           if (task.categoryId === category.id) task.categoryId = fallback;
         });
+        dailyTemplates.forEach((template) => {
+          if (template.categoryId === category.id) template.categoryId = fallback;
+        });
         categories = categories.filter((item) => item.id !== category.id);
         if (activeCategory === category.id) activeCategory = "all";
         render();
@@ -276,7 +332,7 @@ function fitDesktopWindow() {
 }
 
 function notificationKey(task) {
-  return `yuanqing-notified-${task.id}-${task.reminderAt ?? localDateValue()}`;
+  return `atomic-notified-${task.id}-${task.reminderAt ?? localDateValue()}`;
 }
 
 function checkDueTasks() {
@@ -331,7 +387,8 @@ form.addEventListener("submit", (event) => {
     const normalized = parsed.parsedTime.padStart(5, "0");
     reminder = { at: `${localDateValue()}T${normalized}`, lead: 0 };
   }
-  tasks.unshift({
+  const recurrenceId = planSelect.value === "daily" ? crypto.randomUUID() : null;
+  const task = {
     id: crypto.randomUUID(),
     name: parsed.name,
     time: parsed.time,
@@ -339,8 +396,22 @@ form.addEventListener("submit", (event) => {
     planId: planSelect.value,
     reminderAt: reminder?.at ?? null,
     reminderLead: reminder?.lead ?? 0,
+    recurrenceId,
+    occurrenceDate: recurrenceId ? localDateValue() : null,
     done: false,
-  });
+  };
+  tasks.unshift(task);
+  if (recurrenceId) {
+    dailyTemplates.unshift({
+      id: recurrenceId,
+      name: task.name,
+      time: task.time,
+      categoryId: task.categoryId,
+      reminderTime: task.reminderAt?.slice(11, 16) ?? null,
+      reminderLead: task.reminderLead,
+      lastGeneratedDate: task.occurrenceDate,
+    });
+  }
   input.value = "";
   pendingReminder = null;
   render();
@@ -456,4 +527,9 @@ if (window.atomicTodo) {
   setInterval(checkDueTasks, 15_000);
 }
 
+ensureDailyTasks();
+setInterval(() => {
+  document.querySelector("#todayLabel").textContent = weekday.format(new Date());
+  if (ensureDailyTasks()) render();
+}, 60_000);
 render();
