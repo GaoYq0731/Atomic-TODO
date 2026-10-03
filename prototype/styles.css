@@ -760,6 +760,39 @@ h2,
   font-weight: 800;
 }
 
+.delete-dialog__task {
+  margin: 0;
+  color: #ded8ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.delete-dialog__copy {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.delete-dialog__actions {
+  justify-content: stretch;
+}
+
+.delete-dialog__actions .dialog-button {
+  flex: 1;
+}
+
+.dialog-button--danger {
+  border: 1px solid rgba(255, 128, 128, 0.22);
+  background: rgba(255, 108, 108, 0.12);
+  color: #ffaaaa;
+  font-weight: 750;
+}
+
+.dialog-button--danger:hover {
+  background: rgba(255, 108, 108, 0.2);
+}
+
 @keyframes task-in {
   from { opacity: 0; transform: translateY(5px) scale(0.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }

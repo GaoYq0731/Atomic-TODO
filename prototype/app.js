@@ -1,5 +1,5 @@
 const STORAGE_KEY = "atomic-todo-v1";
-const { shouldGenerateDailyTask } = globalThis.AtomicTodoRecurrence;
+const { shouldGenerateDailyTask, removeDailyTask } = globalThis.AtomicTodoRecurrence;
 
 const plans = [
   { id: "daily", name: "日常计划" },
@@ -54,6 +54,7 @@ let dailyTemplates = savedState.dailyTemplates;
 let activeCategory = "all";
 let activePlan = "all";
 let pendingReminder = null;
+let pendingDailyDeleteTaskId = null;
 let ultraCompact = false;
 
 const widget = document.querySelector(".widget");
@@ -80,6 +81,8 @@ const reminderButton = document.querySelector("#reminderButton");
 const reminderDate = document.querySelector("#reminderDate");
 const reminderTime = document.querySelector("#reminderTime");
 const reminderLead = document.querySelector("#reminderLead");
+const dailyDeleteDialog = document.querySelector("#dailyDeleteDialog");
+const dailyDeleteTaskName = document.querySelector("#dailyDeleteTaskName");
 const lockButton = document.querySelector("#lockButton");
 const ultraRestoreButton = document.querySelector("#ultraRestoreButton");
 
@@ -118,6 +121,27 @@ function ensureDailyTasks(date = localDateValue()) {
     added = true;
   });
   return added;
+}
+
+function closeDailyDeleteDialog() {
+  pendingDailyDeleteTaskId = null;
+  dailyDeleteDialog.close();
+}
+
+function openDailyDeleteDialog(task) {
+  pendingDailyDeleteTaskId = task.id;
+  dailyDeleteTaskName.textContent = task.name;
+  dailyDeleteDialog.showModal();
+}
+
+function confirmDailyDelete(permanently) {
+  if (!pendingDailyDeleteTaskId) return;
+  const result = removeDailyTask(tasks, dailyTemplates, pendingDailyDeleteTaskId, permanently);
+  tasks = result.tasks;
+  dailyTemplates = result.templates;
+  if (!permanently) ensureDailyTasks();
+  closeDailyDeleteDialog();
+  render();
 }
 
 function parseTask(value) {
@@ -175,12 +199,15 @@ function renderTask(task) {
   });
   const deleteButton = node.querySelector(".delete");
   if (task.planId === "daily") {
-    deleteButton.title = "删除本次；日后仍会每日重复";
-    deleteButton.setAttribute("aria-label", "删除本次日常任务");
+    deleteButton.title = "删除日常任务";
+    deleteButton.setAttribute("aria-label", "删除日常任务");
   }
   deleteButton.addEventListener("click", () => {
+    if (task.planId === "daily") {
+      openDailyDeleteDialog(task);
+      return;
+    }
     tasks = tasks.filter((item) => item.id !== task.id);
-    ensureDailyTasks();
     render();
   });
   return node;
@@ -455,6 +482,13 @@ document.querySelector("#reminderSave").addEventListener("click", () => {
 });
 reminderDialog.addEventListener("click", (event) => {
   if (event.target === reminderDialog) reminderDialog.close();
+});
+
+document.querySelector("#dailyDeleteClose").addEventListener("click", closeDailyDeleteDialog);
+document.querySelector("#dailyDeleteOnce").addEventListener("click", () => confirmDailyDelete(false));
+document.querySelector("#dailyDeleteForever").addEventListener("click", () => confirmDailyDelete(true));
+dailyDeleteDialog.addEventListener("click", (event) => {
+  if (event.target === dailyDeleteDialog) closeDailyDeleteDialog();
 });
 
 document.querySelector("#doneToggle").addEventListener("click", () => doneSection.classList.toggle("is-collapsed"));

@@ -1,6 +1,6 @@
 {
   "name": "atomic-todo",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "一个轻巧、有趣、常驻桌面的 Windows 待办清单。",
   "main": "electron/main.cjs",
   "author": {

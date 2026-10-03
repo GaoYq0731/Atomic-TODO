@@ -112,6 +112,22 @@
       <p class="dialog__hint">应用保持运行时，到点会显示 Windows 通知。</p>
     </dialog>
 
+    <dialog class="category-dialog delete-dialog" id="dailyDeleteDialog">
+      <div class="dialog__header">
+        <div>
+          <p class="eyebrow">日常计划</p>
+          <h2>如何删除？</h2>
+        </div>
+        <button class="dialog__close" id="dailyDeleteClose" aria-label="关闭">×</button>
+      </div>
+      <p class="delete-dialog__task" id="dailyDeleteTaskName"></p>
+      <p class="delete-dialog__copy">仅删除本次后，之后仍会每天生成；永久删除将停止以后重复。</p>
+      <div class="dialog-actions delete-dialog__actions">
+        <button class="dialog-button dialog-button--ghost" id="dailyDeleteOnce" type="button">仅删除本次</button>
+        <button class="dialog-button dialog-button--danger" id="dailyDeleteForever" type="button">永久删除</button>
+      </div>
+    </dialog>
+
     <template id="taskTemplate">
       <article class="task">
         <button class="check" aria-label="完成任务"><span></span></button>
