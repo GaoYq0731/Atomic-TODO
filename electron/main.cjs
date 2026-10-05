@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Notification, screen } = require("electron");
+const { app, BrowserWindow, ipcMain, Notification, screen, powerMonitor } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -88,6 +88,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      backgroundThrottling: false,
     },
   });
 
@@ -105,8 +106,16 @@ function createWindow() {
     }, 700);
   });
   mainWindow.on("move", persistWindow);
+  mainWindow.on("focus", refreshClock);
+  mainWindow.on("show", refreshClock);
+  mainWindow.on("restore", refreshClock);
   mainWindow.on("resize", persistWindow);
   mainWindow.on("closed", () => { mainWindow = null; });
+}
+
+function refreshClock() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.send("clock:refresh");
 }
 
 if (!app.requestSingleInstanceLock()) {
@@ -120,6 +129,8 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(() => {
+    powerMonitor.on("resume", refreshClock);
+    powerMonitor.on("unlock-screen", refreshClock);
     app.setName("原子代办");
     app.setAppUserModelId("io.github.gaoyq0731.atomictodo");
     createWindow();

@@ -10,6 +10,11 @@ contextBridge.exposeInMainWorld("atomicTodo", {
   endUltraDrag: () => ipcRenderer.send("window:ultra-drag-end"),
   fitContent: (height) => ipcRenderer.send("window:fit-content", Number(height)),
   getWindowState: () => ipcRenderer.invoke("window:get-state"),
+  onClockRefresh: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("clock:refresh", listener);
+    return () => ipcRenderer.removeListener("clock:refresh", listener);
+  },
   notify: (title, body) => ipcRenderer.invoke("notification:show", { title, body }),
 });
 

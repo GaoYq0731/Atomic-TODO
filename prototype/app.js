@@ -403,6 +403,7 @@ function setUltraCompact(enabled) {
   widget.classList.toggle("is-ultra", enabled);
   window.atomicTodo?.setUltraCompact(enabled);
   if (!enabled) requestAnimationFrame(fitDesktopWindow);
+  if (!enabled) refreshClock();
 }
 
 form.addEventListener("submit", (event) => {
@@ -561,9 +562,19 @@ if (window.atomicTodo) {
   setInterval(checkDueTasks, 15_000);
 }
 
-ensureDailyTasks();
-setInterval(() => {
-  document.querySelector("#todayLabel").textContent = weekday.format(new Date());
-  if (ensureDailyTasks()) render();
-}, 60_000);
+function refreshClock() {
+  const now = new Date();
+  document.querySelector("#todayLabel").textContent = weekday.format(now);
+  if (ensureDailyTasks(localDateValue(now))) render();
+  checkDueTasks();
+}
+
+window.addEventListener("focus", refreshClock);
+window.addEventListener("pageshow", refreshClock);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshClock();
+});
+window.atomicTodo?.onClockRefresh?.(refreshClock);
+setInterval(refreshClock, 30_000);
+refreshClock();
 render();
